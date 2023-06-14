@@ -8,7 +8,7 @@ import { fetchCatByBreed } from './api/cat-api';
 import { selectEl } from './refs/refs';
 import { catContainer } from './refs/refs';
 import { loaderEl } from './refs/refs';
-import { errorEl } from './refs/refs';
+// import { errorEl } from './refs/refs';
 
 window.addEventListener('load', onLoad);
 
@@ -32,7 +32,6 @@ function makeSelectMarkup(items) {
     .join('');
 }
 
-// добавляет разметку в ref(selectEl)
 function addMarkup(ref, markup) {
   ref.innerHTML = markup;
 }
@@ -45,9 +44,7 @@ function onChange(event) {
 
   fetchCatByBreed(id)
     .then(response => {
-      console.log('response:', response);
       const catInfo = response[0];
-      console.log('catInfo:', catInfo);
       const catMarkup = createCatMarkup(catInfo);
       catContainer.innerHTML = catMarkup;
       loaderEl.classList.remove('display');
