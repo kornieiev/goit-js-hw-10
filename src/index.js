@@ -1,7 +1,14 @@
-import { fetchBreeds } from '../src/api/cat-api';
+import SlimSelect from 'slim-select';
+import 'slim-select/dist/slimselect.css';
 
-const selectEL = document.querySelector('.breed-select');
-console.log(selectEL);
+import Notiflix from 'notiflix';
+
+import { fetchBreeds } from './api/cat-api';
+import { fetchCatByBreed } from './api/cat-api';
+import { selectEl } from './refs/refs';
+import { catContainer } from './refs/refs';
+import { loaderEl } from './refs/refs';
+import { errorEl } from './refs/refs';
 
 window.addEventListener('load', onLoad);
 
@@ -9,20 +16,63 @@ function onLoad() {
   fetchBreeds('cats')
     .then(resp => {
       const markup = makeSelectMarkup(resp);
-      addMarkup(selectEL, markup);
+      addMarkup(selectEl, markup);
+      new SlimSelect({
+        select: '#selectElement',
+      });
     })
     .catch(error => console.log(error.message));
 }
 
-function makeSelectMarkup(items = []) {
+function makeSelectMarkup(items) {
   return items
     .map(({ id, name }) => {
-      return `<option value="${id}">${name}</option>
-    `;
+      return `<option value="${id}">🐈‍⬛ - ${name}</option>`;
     })
     .join('');
 }
 
+// добавляет разметку в ref(selectEl)
 function addMarkup(ref, markup) {
   ref.innerHTML = markup;
+}
+
+selectEl.addEventListener('change', onChange);
+
+function onChange(event) {
+  const id = event.target.value;
+  loaderEl.classList.add('display');
+
+  fetchCatByBreed(id)
+    .then(response => {
+      console.log('response:', response);
+      const catInfo = response[0];
+      console.log('catInfo:', catInfo);
+      const catMarkup = createCatMarkup(catInfo);
+      catContainer.innerHTML = catMarkup;
+      loaderEl.classList.remove('display');
+    })
+    .catch(() => {
+      Notiflix.Notify.failure(
+        'Oops! Something went wrong! Try reloading the page!'
+      );
+    });
+}
+
+function createCatMarkup(catInfo) {
+  return `
+<div class="js-part">
+<div class="img-part">
+  <img src="${catInfo.url}" alt="${catInfo.breeds[0].name}" class="cat-img"/>
+</div>
+  <div class="info-part">
+    <h2>🐈‍⬛ ${catInfo.breeds[0].name}</h2>
+    <p class="cat-text">${catInfo.breeds[0].description}</p>
+    <p>
+      <span class="temperament">🐈 Temperament: </span>
+      ${catInfo.breeds[0].temperament}
+    </p>
+  </div>
+</div>
+  `;
 }
